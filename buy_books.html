@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Purchased Books - Bookstore</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: url('https://images.unsplash.com/photo-1589998059171-988d887df646?auto=format&fit=crop&w=1470&q=80') no-repeat center center fixed;
+      background-size: cover;
+      min-height: 100vh;
+    }
+
+    nav {
+      background: rgba(44, 62, 80, 0.8);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 0 0 12px 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    nav h1 {
+      color: #ecf0f1;
+      margin: 0;
+      font-size: 1.7rem;
+    }
+
+    nav a {
+      color: #ecf0f1;
+      margin-left: 1.5rem;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    nav a:hover {
+      color: #f1c40f;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 3rem auto;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+      backdrop-filter: blur(25px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #2c3e50;
+      font-size: 2rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 10px;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    table, th, td {
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    th, td {
+      padding: 0.75rem;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    th {
+      background: #2c3e50;
+      color: #fff;
+    }
+
+    tr:nth-child(even) td {
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.7);
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <h1>📘 Purchased Books</h1>
+    <div>
+    
+      <a href="add_book.html">Add Book</a>
+      <a href="book_issued.html">Book Issued</a>
+      <a href="book_return.html">Book Return</a>
+      <a href="book_available.html">Available Books</a>
+      
+      <a href="buy_books.html">Buy List</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h2>Books Bought by Users</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Book ID</th>
+          <th>Book Name</th>
+          <th>Author</th>
+          <th>Price</th>
+          <th>User Name</th>
+          <th>Email</th>
+          <th>Contact</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="buyTableBody">
+        <!-- Buy book rows will go here -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const tableBody = document.getElementById('buyTableBody');
+    const buyBooks = JSON.parse(localStorage.getItem('buyBooks')) || [];
+    const books = JSON.parse(localStorage.getItem('books')) || [];
+
+    function getBookPriceById(bookId) {
+      const match = books.find(b => b.id == bookId);
+      return match ? `₹${parseFloat(match.price || 0).toFixed(2)}` : '-';
+    }
+
+    function renderBuyBooks() {
+      tableBody.innerHTML = '';
+
+      if (buyBooks.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="8">No books purchased yet.</td></tr>`;
+        return;
+      }
+
+      buyBooks.forEach(book => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${book.bookId || book.id}</td>
+          <td>${book.bookName}</td>
+          <td>${book.authorName || '-'}</td>
+          <td>${getBookPriceById(book.bookId)}</td>
+          <td>${book.userName}</td>
+          <td>${book.email}</td>
+          <td>${book.contact1 || '-'}</td>
+          <td>${book.dateOfIssue || '-'}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    renderBuyBooks();
+  </script>
+
+</body>
+</html>

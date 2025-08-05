@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book Issued - Bookstore</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: url('https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=1470&q=80') no-repeat center center fixed;
+      background-size: cover;
+      min-height: 100vh;
+    }
+
+    nav {
+      background: rgba(44, 62, 80, 0.8);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 0 0 12px 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    nav h1 {
+      color: #ecf0f1;
+      margin: 0;
+      font-size: 1.7rem;
+    }
+
+    nav a {
+      color: #ecf0f1;
+      margin-left: 1.5rem;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    nav a:hover {
+      color: #f1c40f;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 2rem auto;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+      backdrop-filter: blur(25px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #2c3e50;
+      font-size: 2rem;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    form input, form select, form textarea {
+      padding: 0.85rem;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      outline: none;
+      font-size: 1rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    form button {
+      grid-column: 1 / -1;
+      padding: 0.9rem;
+      border: none;
+      background: #2c3e50;
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.3s;
+    }
+
+    form button:hover {
+      background: #34495e;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 2rem;
+      border-collapse: collapse;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 10px;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    th, td {
+      padding: 0.75rem;
+      text-align: center;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    th {
+      background: #2c3e50;
+      color: #fff;
+    }
+
+    td {
+      background: #ecf0f1;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <h1>Bookstore</h1>
+    <div>
+      <a href="add_book.html">Add Book</a>
+      <a href="book_issued.html">Book Issue</a>
+      <a href="book_return.html">Book Return</a>
+      <a href="book_available.html">Book Available</a>
+      <a href="buy_books.html">Buy books</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h2>Issue a Book</h2>
+    <form id="issueForm">
+      <input type="number" id="bookId" placeholder="Book ID" required />
+      <input type="text" id="bookName" placeholder="Book Name" readonly required />
+      <input type="text" id="authorName" placeholder="Author Name" readonly required />
+      <input type="text" id="cost" placeholder="Cost" readonly /> <!-- ✅ New field -->
+      <input type="text" id="userName" placeholder="User Name" required />
+      <input type="tel" id="contact1" placeholder="Contact Number 1" pattern="[0-9]{10}" required />
+      <input type="tel" id="contact2" placeholder="Contact Number 2" pattern="[0-9]{10}" required />
+      <input type="email" id="email" placeholder="Email" required />
+      <textarea id="address" placeholder="Address" rows="3" required></textarea>
+      <input type="date" id="dateOfIssue" required />
+      <select id="issueType" required>
+        <option value="">Select Issue Type</option>
+        <option value="Buy">Buy</option>
+        <option value="Rent">Rent</option>
+      </select>
+      <select id="paymentType" required>
+        <option value="">Select Payment Type</option>
+        <option value="Cash on Pay">Cash on Pay</option>
+        <option value="Net Banking">Net Banking</option>
+        <option value="Debit Card">Debit Card</option>
+      </select>
+      <button type="submit">Issue Book</button>
+    </form>
+
+    <div id="rentDisplaySection">
+      <h2>Issued Books (Rent)</h2>
+      <table id="rentTable">
+        <thead>
+          <tr>
+            <th>Book ID</th>
+            <th>User</th>
+            <th>Issue Date</th>
+            <th>Contact</th>
+            <th>Email</th>
+            <th>Payment</th>
+            <th>Cost</th> <!-- ✅ Display cost -->
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const books = JSON.parse(localStorage.getItem('books')) || [];
+    let issuedBooksById = JSON.parse(localStorage.getItem('issuedBooksById')) || {};
+    let buyBooks = JSON.parse(localStorage.getItem('buyBooks')) || [];
+
+    function decreaseCopies(bookId) {
+      const bookIndex = books.findIndex(b => b.id == bookId);
+      if (bookIndex !== -1 && books[bookIndex].copies > 0) {
+        books[bookIndex].copies -= 1;
+        localStorage.setItem('books', JSON.stringify(books));
+      }
+    }
+
+    document.getElementById('bookId').addEventListener('blur', function () {
+      const bookId = this.value.trim();
+      const book = books.find(b => b.id == bookId);
+      if (book) {
+        document.getElementById('bookName').value = book.name;
+        document.getElementById('authorName').value = book.author;
+        document.getElementById('cost').value = book.price || '';
+      } else {
+        document.getElementById('bookName').value = '';
+        document.getElementById('authorName').value = '';
+        document.getElementById('cost').value = '';
+        alert('Book ID not found in the list!');
+      }
+    });
+
+    document.getElementById('issueForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const bookId = document.getElementById('bookId').value.trim();
+      const bookName = document.getElementById('bookName').value;
+      const authorName = document.getElementById('authorName').value;
+      const price = document.getElementById('cost').value;
+      const userName = document.getElementById('userName').value.trim();
+      const contact1 = document.getElementById('contact1').value;
+      const contact2 = document.getElementById('contact2').value;
+      const email = document.getElementById('email').value;
+      const address = document.getElementById('address').value;
+      const dateOfIssue = document.getElementById('dateOfIssue').value;
+      const issueType = document.getElementById('issueType').value;
+      const paymentType = document.getElementById('paymentType').value;
+
+      if (!bookId || !bookName || !authorName || !userName || !contact1 || !email || !dateOfIssue || !issueType || !paymentType) {
+        alert("Please fill all required fields.");
+        return;
+      }
+
+      const book = books.find(b => b.id == bookId);
+      if (!book || book.copies <= 0) {
+        alert("Book not available or out of stock.");
+        return;
+      }
+
+      decreaseCopies(bookId);
+
+      const issuedEntry = {
+        bookId, bookName, authorName, userName,
+        contact1, contact2, email, address,
+        dateOfIssue, issueType, paymentType,
+        price
+      };
+
+      if (issueType === "Buy") {
+        buyBooks.push(issuedEntry);
+        localStorage.setItem('buyBooks', JSON.stringify(buyBooks));
+      } else {
+        if (!issuedBooksById[bookId]) issuedBooksById[bookId] = [];
+        issuedBooksById[bookId].push(issuedEntry);
+        localStorage.setItem('issuedBooksById', JSON.stringify(issuedBooksById));
+        updateRentTable();
+      }
+
+      alert("Book issued successfully!");
+      this.reset();
+      document.getElementById('dateOfIssue').value = new Date().toISOString().split('T')[0];
+    });
+
+    function updateRentTable() {
+      const tbody = document.querySelector('#rentTable tbody');
+      tbody.innerHTML = '';
+      for (let bookId in issuedBooksById) {
+        issuedBooksById[bookId].forEach(entry => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${entry.bookId}</td>
+            <td>${entry.userName}</td>
+            <td>${entry.dateOfIssue}</td>
+            <td>${entry.contact1}</td>
+            <td>${entry.email}</td>
+            <td>${entry.paymentType}</td>
+            <td>${entry.price || '-'}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+    }
+
+    document.getElementById('dateOfIssue').value = new Date().toISOString().split('T')[0];
+    updateRentTable();
+  </script>
+</body>
+</html>
